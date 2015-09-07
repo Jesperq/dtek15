@@ -4,7 +4,7 @@
 
 	.text
 main:
-	li	$a0, 10		# change this to test different values
+	li	$a0, 16			# change this to test different values
 
 	jal	hexasc			# call hexasc
 	nop				# delay slot filler (just in case)	
@@ -24,7 +24,7 @@ hexasc:
 	andi  	$t0, $a0, 15		# "mask" parameter with 1111 = 15 to get the 4 least 
 					# significant bits of $a0 inly, igniore higher bits
 	
-	addi  	$v0, $a0, 0x30		# add 0x30 = the position of 0 in ASCII table
+	addi  	$v0, $t0, 0x30		# add 0x30 = the position of 0 in ASCII table
 					# lets call this the "offset"
 	
 	bltu   	$v0, 0x3a, number	# check if the parameter is a number or if it is a letter

@@ -73,4 +73,34 @@ tiend:	sw	$t0,0($a0)	# save updated result
 	nop
 
   # you can write your code for subroutine "hexasc" below this line
-  #
+  # Written by Rickard Larsson 2015
+
+hexasc:
+	andi  	$t0, $a0, 15		# "mask" parameter with 1111 = 15 to get the 4 least 
+					# significant bits of $a0 inly, igniore higher bits
+	
+	addi  	$v0, $t0, 0x30		# add 0x30 = the position of 0 in ASCII table
+					# lets call this the "offset"
+	
+	bltu   	$v0, 0x3a, number	# check if the parameter is a number or if it is a letter
+					# if $v0 < 0x3a we know it is a number, its inside the span
+	
+	addi	$v0, $v0, 7		# we know that the parameter is a letter, go to letters A-F
+					# in the ASCII table (7 steps forward) from 0
+	
+number:
+	andi $v0, $v0, 127		# make sure that only the 7 least significant bits will be returned
+					# use the "mask" 1111111 = 127
+	
+	jr $ra				# go back to return adress in main to print out
+	
+delay:
+	jr $ra
+	nop
+	
+ # Written by Rickard Larsson 2015
+
+time2string:
+	jr $ra
+	nop
+	

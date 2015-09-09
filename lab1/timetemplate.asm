@@ -91,6 +91,48 @@ print:
   #
 
 delay:
+	addi	$sp,$sp,-4	#pusha return adress till stack point
+	sw	$ra,0($sp)	#
+	
+	addi	$sp,$sp,-4	#pusha $a0 till stacken
+	sw	$a0,0($sp)	#
+	
+	addi	$sp,$sp,-4	#pusha $a1 till stacken
+	sw	$a1,0($sp)	#
+	
+	addi	$sp,$sp,-4	#pusha $a2 till stacken
+	sw	$a2,0($sp)	#
+	
+	li	$a0, 1000	#variable ms
+	li	$a1, 70000	#variable for for loop, should be easy to change
+	move	$a2, $0		#variable "i" for for loop
+	
+while:
+	beq  $a0, $0, done	# if ms == 0, we are done
+	subiu	$a0,$a0,1	# decrease ms
+	
+for:	
+	bgt $a2, $a1, break	# if i > 4711 we are done
+	addi $a2, $a2, 1	#i++
+	nop
+	j for
+	
+break:
+	j while	
+	
+done:
+	lw	$a2,0($sp)	#popa tillbaka $a2
+	addi	$sp,$sp,4	#
+	
+	lw	$a1,0($sp)	#popa tillbaka $a1
+	addi	$sp,$sp,4	#
+	
+	lw	$a0,0($sp)	#popa tillbaka $a0
+	addi	$sp,$sp,4	#
+	
+	lw	$ra,0($sp)	#poppa return adress från stack point
+	addi	$sp,$sp,4	#
+	
 	jr $ra
 	nop
 	

@@ -73,34 +73,73 @@ tiend:	sw	$t0,0($a0)	# save updated result
 	nop
 
   # you can write your code for subroutine "hexasc" below this line
-  # Written by Rickard Larsson 2015
-
+  #
+  
 hexasc:
-	andi  	$t0, $a0, 15		# "mask" parameter with 1111 = 15 to get the 4 least 
-					# significant bits of $a0 inly, igniore higher bits
+	andi $t4, 15		#maska med 15 för att få fyra första bitarna
+	addi $t4, $t4, 48	#hoppa fram till ascii för 0 (minst)
 	
-	addi  	$v0, $t0, 0x30		# add 0x30 = the position of 0 in ASCII table
-					# lets call this the "offset"
+	blt $t4, 58, print	#om a0 är mellan 0-9 printas det direkt
+	addi $t4, $t4, 7	#annars lägg till 7 för att komma till ascii för A
 	
-	bltu   	$v0, 0x3a, number	# check if the parameter is a number or if it is a letter
-					# if $v0 < 0x3a we know it is a number, its inside the span
+print:
+	andi $t4, 127		#maska de 7 minst signifikanta bitarna
+	jr $ra			#hoppa tillbaka
+	nop
 	
-	addi	$v0, $v0, 7		# we know that the parameter is a letter, go to letters A-F
-					# in the ASCII table (7 steps forward) from 0
-	
-number:
-	andi $v0, $v0, 127		# make sure that only the 7 least significant bits will be returned
-					# use the "mask" 1111111 = 127
-	
-	jr $ra				# go back to return adress in main to print out
-	
+  #delay function
+  #
+
 delay:
 	jr $ra
 	nop
 	
- # Written by Rickard Larsson 2015
-
+	
+  #time2string function
+  #
+  
 time2string:
+
+	addi	$sp,$sp,-4	#pusha return adress till stack point
+	sw	$ra,0($sp)
+	
+	srl $t4, $a1, 4		#skifta 4 åt höger för att hämta nästa 4 bitar
+	jal hexasc		#skicka till hexasc för att få ascii för tredje siffran			
+	or $t5, $t5, $t4	#maska med t5
+	
+	li $t4, 0x3A 		#ascii för :
+	sll $t5, $t5, 8		#skifta t5 8 bitar för att få plats med nästa två tecken
+	or $t5, $t5, $t4	#maska med t5
+
+	srl $t4, $a1, 8		#skifta 8 åt höger för att hämta nästa 4 bitar
+	jal hexasc		#skicka till hexasc för att få ascii för andra siffran	
+	sll $t5, $t5, 8		#skifta t5 8 bitar för att få plats med nästa två tecken
+	or $t5, $t5, $t4	#maska med t5
+
+	srl $t4, $a1, 12	#skifta 12 åt höger för att få nästa 4 bitar	
+	jal hexasc		#skicka till hexasc för att få ascii för första siffran	
+	sll $t5, $t5, 8		#skifta t5 8 bitar för att få plats med nästa två tecken
+	or $t5, $t5, $t4	#maska med t5
+		
+	sw $t5, 0($a0)		#skicka 4 första tecken till a0 (då vi har använt 32 bitar och ej får plats med flera)
+	
+	move $t5, $0		#nolla t5
+	
+	li $t4, 0x00		#ascii för null byte			
+	sll $t5, $t5, 4		#skifta t5 4 bitar för att få plats med nästkommande tecken (nullbiten är bara 4 bitar och vi behöver därför bara skifta 4)
+	or $t5, $t5, $t4	#maska med t5
+	
+	move $t4, $a1 		#lägg hela a1 i t1
+	jal hexasc		#skicka till hexasc för att få ascii för fjärde siffran		
+	sll $t5, $t5, 8		#skifta t5 8 bitar för att få plats med nästa två tecken
+	or $t5, $t5, $t4	#maska med t5
+	
+	sw $t5, 4($a0)		#skicka resten till a0
+	
+	lw	$ra,0($sp)	#poppa return adress från stack point
+	addi	$sp,$sp,4	
+	
+	move $t5, $0		#nolla t4 för nästa iteration
+	
 	jr $ra
 	nop
-	

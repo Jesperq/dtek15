@@ -80,6 +80,7 @@ hexasc:
 	addi $t4, $t4, 48	#hoppa fram till ascii för 0 (minst)
 	
 	blt $t4, 58, print	#om a0 är mellan 0-9 printas det direkt
+	nop
 	addi $t4, $t4, 7	#annars lägg till 7 för att komma till ascii för A
 	
 print:
@@ -92,46 +93,51 @@ print:
 
 delay:
 	addi	$sp,$sp,-4	#pusha return adress till stack point
-	sw	$ra,0($sp)	#
+	sw	$ra,0($sp)
 	
-	addi	$sp,$sp,-4	#pusha $a0 till stacken
-	sw	$a0,0($sp)	#
+	addi	$sp,$sp,-4	#pusha a0 till stacken
+	sw	$a0,0($sp)
 	
-	addi	$sp,$sp,-4	#pusha $a1 till stacken
-	sw	$a1,0($sp)	#
+	addi	$sp,$sp,-4	#pusha t0 till stacken
+	sw	$t0,0($sp)
 	
-	addi	$sp,$sp,-4	#pusha $a2 till stacken
-	sw	$a2,0($sp)	#
+	addi	$sp,$sp,-4	#pusha t1 till stacken
+	sw	$t1,0($sp)
 	
-	li	$a0, 1000	#variable ms
-	li	$a1, 70000	#variable for for loop, should be easy to change
-	move	$a2, $0		#variable "i" for for loop
+	li 	$a0, 1000	#ms
+	li	$t0, 500000	#konstant (ändras pga dator osv)
+	li	$t1, 0		#i=0
 	
 while:
-	beq  $a0, $0, done	# if ms == 0, we are done
-	subiu	$a0,$a0,1	# decrease ms
+	bge $0, $a0, done	#om ms är lika med noll bryt
+	nop
+	addi $a0, $a0, -1
 	
 for:	
-	bgt $a2, $a1, break	# if i > 4711 we are done
-	addi $a2, $a2, 1	#i++
+	bgt $t1, $t0, breakp	#om i > konstant, bryt
 	nop
+	addi $t1, $t1, 1	#i++
 	j for
+	nop
 	
-break:
-	j while	
-	
+breakp:
+	j while			#loop
+	nop
+		
 done:
-	lw	$a2,0($sp)	#popa tillbaka $a2
-	addi	$sp,$sp,4	#
 	
-	lw	$a1,0($sp)	#popa tillbaka $a1
-	addi	$sp,$sp,4	#
 	
-	lw	$a0,0($sp)	#popa tillbaka $a0
-	addi	$sp,$sp,4	#
+	lw	$t1,0($sp)	#poppa t1 från stack point
+	addi	$sp,$sp,4
+	
+	lw	$t0,0($sp)	#poppa t0 från stack point
+	addi	$sp,$sp,4
+	
+	lw	$a0,0($sp)	#poppa a0 från stack point
+	addi	$sp,$sp,4
 	
 	lw	$ra,0($sp)	#poppa return adress från stack point
-	addi	$sp,$sp,4	#
+	addi	$sp,$sp,4	
 	
 	jr $ra
 	nop
@@ -146,7 +152,8 @@ time2string:
 	sw	$ra,0($sp)
 	
 	srl $t4, $a1, 4		#skifta 4 åt höger för att hämta nästa 4 bitar
-	jal hexasc		#skicka till hexasc för att få ascii för tredje siffran			
+	jal hexasc		#skicka till hexasc för att få ascii för tredje siffran		
+	nop	
 	or $t5, $t5, $t4	#maska med t5
 	
 	li $t4, 0x3A 		#ascii för :
@@ -155,11 +162,13 @@ time2string:
 
 	srl $t4, $a1, 8		#skifta 8 åt höger för att hämta nästa 4 bitar
 	jal hexasc		#skicka till hexasc för att få ascii för andra siffran	
+	nop
 	sll $t5, $t5, 8		#skifta t5 8 bitar för att få plats med nästa två tecken
 	or $t5, $t5, $t4	#maska med t5
 
 	srl $t4, $a1, 12	#skifta 12 åt höger för att få nästa 4 bitar	
 	jal hexasc		#skicka till hexasc för att få ascii för första siffran	
+	nop
 	sll $t5, $t5, 8		#skifta t5 8 bitar för att få plats med nästa två tecken
 	or $t5, $t5, $t4	#maska med t5
 		
@@ -173,6 +182,7 @@ time2string:
 	
 	move $t4, $a1 		#lägg hela a1 i t1
 	jal hexasc		#skicka till hexasc för att få ascii för fjärde siffran		
+	nop
 	sll $t5, $t5, 8		#skifta t5 8 bitar för att få plats med nästa två tecken
 	or $t5, $t5, $t4	#maska med t5
 	
@@ -185,3 +195,5 @@ time2string:
 	
 	jr $ra
 	nop
+	
+	

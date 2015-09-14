@@ -1,7 +1,3 @@
-  # timetemplate.asm
-  # Written 2015 by F Lundevall
-  # Copyright abandonded - this file is in the public domain.
-
 .macro	PUSH (%reg)
 	addi	$sp,$sp,-4
 	sw	%reg,0($sp)
@@ -77,18 +73,18 @@ tiend:	sw	$t0,0($a0)	# save updated result
   
 hexasc:
 	
- 	andi	$a0, $a0, 15	# Maska med 1111 = 15 för att bara få de minst signifikanta bitarna
+ 	andi	$a0, $a0, 15	# Maska med 1111 = 15 fÃ¶r att bara fÃ¥ de minst signifikanta bitarna
  	
- 	addi	$a0, $a0, 0x30	# Lägg till 0x30 för att komma till "rätt" index i ASCII-tabellen
+ 	addi	$a0, $a0, 0x30	# LÃ¤gg till 0x30 fÃ¶r att komma till "rÃ¤tt" index i ASCII-tabellen
  	
- 	li	$t1, 0x39	# Lagra index för 9 i ASCII-tabellen som ska jämföras med värdet i $a0
- 	ble	$a0, $t1, done	# om $a0 <= $t1 vet vi att vi har ett nummer, och vi är klara
+ 	li	$t1, 0x39	# Lagra index fÃ¶r 9 i ASCII-tabellen som ska jÃ¤mfÃ¶ras med vÃ¤rdet i $a0
+ 	ble	$a0, $t1, done	# om $a0 <= $t1 vet vi att vi har ett nummer, och vi Ã¤r klara
  	nop
  	
- 	addi	$a0, $a0, 7	# Lägg till 7 för att komma till versaler i ASCII-tabellen
+ 	addi	$a0, $a0, 7	# LÃ¤gg till 7 fÃ¶r att komma till versaler i ASCII-tabellen
  	
 done:
- 	andi 	$v0, $a0, 127	# Maska med 1111111 = 127 för att enbart spara de 7 minst signifikanta bitarna
+ 	andi 	$v0, $a0, 127	# Maska med 1111111 = 127 fÃ¶r att enbart spara de 7 minst signifikanta bitarna
  	
  	jr	$ra
  	nop
@@ -101,7 +97,7 @@ done:
 	sw	$ra,0($sp)	#
 	
 	li 	$a0, 1000	#ms
-	li	$t1, 500	#konstant (ändras pga dator osv)
+	li	$t1, 500	#konstant (Ã¤ndras pga dator osv)
 	li	$t2, 0		#i=0
 	
 while:
@@ -121,7 +117,7 @@ breakfor:
 	nop
 		
 breakwhile:
-	lw	$ra,0($sp)	#poppa return adress från stack point
+	lw	$ra,0($sp)	#poppa return adress frÃ¥n stack point
 	addi	$sp,$sp,4	
 	
 	jr $ra
@@ -135,11 +131,7 @@ time2string:
 	addi	$sp,$sp,-4	# pusha return adress till stacken
 	sw	$ra,0($sp)	#
 	
-	addi	$sp,$sp,-4	# spara ner värde på $s0 till stacken
-	sw	$s0,0($sp)	#
-	move 	$s0, $0		# nollställer $s0
-	
-	addi	$sp,$sp,-4	# spara ner värde på $s1 till stacken
+	addi	$sp,$sp,-4	# spara ner vÃ¤rde pÃ¥ $s1 till stacken
 	sw	$s1,0($sp)	#
 	move	$s1, $a0	# spara ner minnesadressen till $s1
 	
@@ -147,67 +139,51 @@ time2string:
 	
 	#-------------------------------------------------------------------------
 	
-	
-	# Tredje siffran
-	srl	$a0, $a1, 4	# Skifta $a1 4 bitar åt höger för att få
-	andi	$a0, $a0, 15	# den näst sista NBCD-codade siffran (00:X0) <- X
+	# FÃ¶rsta siffran
+	srl	$a0, $a1, 12	# Skifta $a1 12 bitar Ã¥t hÃ¶ger fÃ¶r att fÃ¥
+	andi	$a0, $a0, 15	# den fÃ¶rsta NBCD-codade siffran (X0:00) <- X
 	jal	hexasc		# omvandla till "ASCII-index"
 	nop
-	or	$s0, $s0, $v0	# "ora" på returvärdet på $s0
+	sb 	$v0, ($s1)
 	
-	# Lägg till ":"
-	li	$t1, 0x3a	# 0x3a är : i ASCII
-	sll	$s0, $s0, 8	# shifta 8 bitar till vänster för att få plats
-	or	$s0, $s0, $t1	# "ora" på kolon
-	
-	# Andra siffran
-	srl	$a0, $a1, 8	# Skifta $a1 8 bitar åt höger för att få
+		# Andra siffran
+	srl	$a0, $a1, 8	# Skifta $a1 8 bitar Ã¥t hÃ¶ger fÃ¶r att fÃ¥
 	andi	$a0, $a0, 15	# den andra NBCD-codade siffran (0X:00) <- X
 	jal	hexasc		# omvandla till "ASCII-index"
 	nop
-	sll	$s0, $s0, 8	# shifta 8 bitar till vänster för att få plats
-	or	$s0, $s0, $v0	# "ora" på returvärdet på $s0	
+	sb	$v0, 1($s1)
 	
-	# Första siffran
-	srl	$a0, $a1, 12	# Skifta $a1 12 bitar åt höger för att få
-	andi	$a0, $a0, 15	# den första NBCD-codade siffran (X0:00) <- X
+		# LÃ¤gg till ":"
+	li	$t1, 0x3a	# 0x3a Ã¤r : i ASCII
+	sb	$t1, 2($s1)
+	
+	# Tredje siffran
+	srl	$a0, $a1, 4	# Skifta $a1 4 bitar Ã¥t hÃ¶ger fÃ¶r att fÃ¥
+	andi	$a0, $a0, 15	# den nÃ¤st sista NBCD-codade siffran (00:X0) <- X
 	jal	hexasc		# omvandla till "ASCII-index"
 	nop
-	sll	$s0, $s0, 8	# shifta 8 bitar till vänster för att få plats
-	or	$s0, $s0, $v0	# "ora" på returvärdet på $s0	
+	sb 	$v0, 3($s1)
 	
-	sw	$s0, 0($s1)	# 8*4 = 32 bitar, vi sparar ner de 4 första tecknena via minnesadressen
-	move	$s0, $0		# Nollställer $s0
-	
-	# Lägg till NULL
-	li	$t1, 0x00	# 0x00 är NULL i ASCII (1 bit)
-	sll	$s0, $s0, 8	# shifta 4 bitar till vänster för att få plats
-	or	$s0, $s0, $t1	# "ora" på returvärdet på $s0	
-	
-	# Fjärde siffran
-	andi	$a0, $a1, 15	# maska för att få sista NBCD-codade siffran (00:0X) <- X
+	# FjÃ¤rde siffran
+	andi	$a0, $a1, 15	# maska fÃ¶r att fÃ¥ sista NBCD-codade siffran (00:0X) <- X
 	jal	hexasc		# omvandla till "ASCII-index"
 	nop
-	or	$s0, $s0, $v0	# "ora" på returvärdet på $s0
+	sb	$v0, 4($s1)
 	
-	sw	$s0, 4($s1)	# Gå till nästa plats i minnet
+	# LÃ¤gg till NULL
+	li	$t1, 0x00	# 0x00 Ã¤r NULL i ASCII (1 bit)
+	sb	$t1, 5($s1)
+	
 	
 	#-------------------------------------------------------------------------
 		
-	move	$a0, $s1	# lägg tillbaka minnesadressen i $a0
+	move	$a0, $s1	# lÃ¤gg tillbaka minnesadressen i $a0
 	
-	lw	$s1,0($sp)	# Återställ $s1
+	lw	$s1,0($sp)	# Ã…terstÃ¤ll $s1
 	addi	$sp,$sp,4	#
 	
-	lw	$s0,0($sp)	# Återställ $s0
-	addi	$sp,$sp,4	#
-	
-	lw	$ra,0($sp)	# poppa return adress från stacken
+	lw	$ra,0($sp)	# poppa return adress frÃ¥n stacken
 	addi	$sp,$sp,4	#
 	
 	jr	$ra		#jump back to return adress
 	nop
-	
-	
-	
- 	

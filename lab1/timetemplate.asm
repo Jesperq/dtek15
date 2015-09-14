@@ -156,7 +156,7 @@ time2string:
 	or	$s0, $s0, $v0	# "ora" på returvärdet på $s0
 	
 	# Lägg till ":"
-	li	$t1, 0x3a	# 0x3a är : i ASCII (6 bitar)
+	li	$t1, 0x3a	# 0x3a är : i ASCII
 	sll	$s0, $s0, 8	# shifta 8 bitar till vänster för att få plats
 	or	$s0, $s0, $t1	# "ora" på kolon
 	
